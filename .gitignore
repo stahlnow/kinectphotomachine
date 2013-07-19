@@ -1,0 +1,18 @@
+# general
+bin
+obj
+.svn
+
+*.swp
+
+# arduino
+*.o
+*.hex
+.dep
+.lib
+
+
+# mac specific
+*.xcconfig
+*.xcodeproj/
+*.plist

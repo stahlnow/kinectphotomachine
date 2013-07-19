@@ -1,0 +1,7 @@
+ofxNetwork
+ofxOpenCv
+ofxXmlSettings
+ofxDelaunay
+ofxGui
+ofxKinect
+ofxPostProcessing
