@@ -31,7 +31,7 @@ void loop()
     Serial.print(millis() - start);        // check on performance in milliseconds
     Serial.print("\t");                    // tab character for debug windown spacing
 
-    Serial.print(total1);                  // print sensor output 1
+    Serial.println(total1);                  // print sensor output 1
     //Serial.print("\t");
     //Serial.print(total2);                  // print sensor output 2
     //Serial.print("\t");

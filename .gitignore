@@ -13,6 +13,7 @@ obj
 
 
 # mac specific
+.app
 *.xcconfig
-*.xcodeproj/
+*.xcodeproj
 *.plist
