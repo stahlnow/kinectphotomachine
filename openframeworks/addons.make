@@ -5,3 +5,4 @@ ofxDelaunay
 ofxGui
 ofxKinect
 ofxPostProcessing
+ofxFatLines

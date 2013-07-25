@@ -5,11 +5,13 @@ class Arduino : public ofThread  {
 
 public:
 
-   static const int COMMAND_LENGTH = 13;
+   static const int COMMAND_LENGTH = 64;
 
    void threadedFunction() {
 
-      serial.setup("/dev/ttyACM3", 9600);
+      if (!serial.setup("/dev/ttyACM0", 19200)){
+         cout << "could not open serial port." << endl;
+      }
 
       unsigned char buffer[COMMAND_LENGTH];
 
@@ -19,7 +21,7 @@ public:
          
             int result = serial.readBytes(buffer, COMMAND_LENGTH);
 
-            string input(buffer, buffer + sizeof buffer / sizeof buffer[0] );
+            //string input(buffer, buffer + sizeof buffer / sizeof buffer[0] );
 
             // check for error code
             if ( result == OF_SERIAL_ERROR ) {
@@ -31,7 +33,12 @@ public:
             
             } else {
                
-               //cout << input << endl;
+               int value = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16) | (buffer[8] << 24);
+               cout << value << endl;
+               serial.flush();
+
+               /*
+               cout << input.substr(0, 13) << endl;
                
                int p0 = input.rfind("START", input.length());
                int p1 = input.rfind("STOP", input.length());
@@ -40,6 +47,7 @@ public:
                   int value = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16) | (buffer[8] << 24);
                   cout << "found START as " << input.substr(p0, 5) << " and STOP as " << input.substr(p1, 4) << " value is: " << value << endl;
                }
+               */
             
             }
          }

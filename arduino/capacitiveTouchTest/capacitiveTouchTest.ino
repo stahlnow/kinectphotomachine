@@ -5,7 +5,7 @@ CapacitiveSensor   cs_4_2 = CapacitiveSensor(4,2);        // 1M resistor between
 
 void setup()                    
 {
-   Serial.begin(9600);
+   Serial.begin(19200);
    while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
    }
@@ -14,7 +14,7 @@ void setup()
 void loop()                    
 {
   // read capacitive sensor
-  long s =  cs_4_2.capacitiveSensor(30);
+  long s = cs_4_2.capacitiveSensor(30);
   
   unsigned char b[64];
   b[0]  = 'S';
@@ -32,5 +32,5 @@ void loop()
   b[12] = 'P';
   Serial.write(b, 64);
   Serial.flush();
-  delay(10); 
+  //delay(10); 
 }

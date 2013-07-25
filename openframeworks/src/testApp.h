@@ -5,10 +5,15 @@
 #include "ofxKinect.h"
 #include "ofxDelaunay.h"
 #include "ofxPostProcessing.h"
-
+#include "ofxFatLine.h"
 #include "Arduino.h"
 
-class testApp : public ofBaseApp{
+  
+static bool isPrinting = false;
+static bool isLoading = false;
+
+class testApp : public ofBaseApp {
+
 public:
    void setup();
    void update();
@@ -26,7 +31,7 @@ public:
 
    void exit();
 
-
+  
 private:
    ofxKinect kinect;
 
@@ -41,16 +46,29 @@ private:
    ofxSlider<float> noiseAmount;
    ofxToggle useRealColors;
    ofxSlider<int> pointSkip;
+   ofxSlider<int> screenRotation;
+
+   // other settings
+   string serial_port;
+   string mobile_printer_name;
+   string mobile_printer_format;
+   string mobile_printer_quality;
+   string mobile_printer_media_type;
+
+   
 
    // meshes
-
    ofMesh convertedMesh;
    ofMesh wireframeMesh;
-
    ofxDelaunay del;
-
    ofImage blob;
 
+   ofFloatColor pantone165c = ofFloatColor(1.0, 0.37, 0.0, 1.0);
+   ofFloatColor pantone163c = ofFloatColor(1.0, 0.61, 0.44, 1.0);
+   ofFloatColor pantone712c = ofFloatColor(0.98, 0.80, 0.68, 1.0);
+
+
+   // serial
    Arduino arduino;
 
 };

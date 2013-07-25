@@ -5,9 +5,7 @@
 //--------------------------------------------------------------
 void testApp::setup() {
 
-   arduino.startThread(true, false);
-
-
+   //arduino.startThread(true, false);
    
    ofSetFrameRate(30);
    kinect.init();
@@ -24,9 +22,25 @@ void testApp::setup() {
    gui.add(pointSkip.setup("Point Skip", 3, 1, 20));
    gui.add(useRealColors.setup("Real Colors", true));
    gui.add(colorAlpha.setup("Color Alpha", 255, 0, 255));
+   gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
    gui.loadFromFile("settings.xml");
-   showGui = true;
+   showGui = false;
 
+   // load other settings
+   ofxXmlSettings settings;
+   settings.loadFile("settings.xml");
+   serial_port = settings.getValue("settings:serial_port", "/dev/ttyACM0");
+   mobile_printer_name = settings.getValue("settings:mobile_printer_name", "");
+   mobile_printer_format = settings.getValue("settings:mobile_printer_format", "");
+   mobile_printer_quality = settings.getValue("settings:mobile_printer_quality", "");
+   mobile_printer_media_type = settings.getValue("settings:mobile_printer_media_type", "");
+
+   cout << "read settings:"<< endl;
+   cout << serial_port << endl;
+   cout << mobile_printer_name << endl;
+   cout << mobile_printer_format << endl;
+   cout << mobile_printer_quality << endl;
+   cout << mobile_printer_media_type << endl;
 
    // fx
    postFx.init(ofGetWidth(), ofGetHeight());
@@ -194,6 +208,7 @@ void testApp::draw(){
    glPushAttrib(GL_ALL_ATTRIB_BITS);
    glShadeModel(GL_FLAT);
    glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+   ofRotate(screenRotation); // rotate for portrait mode
    convertedMesh.drawFaces();
    glShadeModel(GL_SMOOTH);
    glPopAttrib();
@@ -204,7 +219,7 @@ void testApp::draw(){
       ofSetColor(124, 136, 128, 255);
 
    ofPushMatrix();
-   ofTranslate(0, 0,0.5);
+   ofTranslate(0, 0, 0.5);
    wireframeMesh.drawWireframe();
    ofPopMatrix();
    cam.end();
@@ -213,7 +228,6 @@ void testApp::draw(){
    postFx.end();
 
    if(showGui) {
-
       ofPushStyle();
       ofSetColor(255,255,255,255);
       gui.draw();
@@ -221,19 +235,88 @@ void testApp::draw(){
    }
    ofSetColor(255, 255, 255);
 
+
+
+   // loading animation
+   if (!isPrinting && isLoading) {
+
+      ofPushMatrix();
+      ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+
+      int resolution = 1024;
+      int radius = 100;
+      double w = 2;
+      float loaded = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
+
+      ofxFatLineOptions opt;
+      opt.feather = 20.0;
+
+      int size_of_v = 2;
+
+      ofVec2f v[size_of_v];
+      v[0].x=0; v[0].y=0;
+      v[1].x=0; v[1].y=radius;
+
+      ofFloatColor color[size_of_v];
+      color[0].set(pantone712c);
+      color[1].set(pantone165c);
+
+      double weight[size_of_v];
+      weight[0] = w;
+      weight[1] = w;
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_COLOR_ARRAY);
+      //glEnable(GL_BLEND);
+
+
+      float minTheta = 0, maxTheta = loaded;
+      for (int i = 0; i < resolution; i++) {
+         float theta  = ofMap(i, 0, resolution - 1, minTheta, maxTheta);
+         v[1].rotate(theta);
+         ofxFatLine(v, color, weight, size_of_v, &opt, true);
+      }
+
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glDisableClientState(GL_COLOR_ARRAY);
+
+      ofPopMatrix();
+   }
+
 }
+
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key) {
 
-   if (key == 'p') {
-      
+   if (key == 'l') {
+      if (!isLoading)
+         isLoading = true;
+      else
+         isLoading = false;
    }
 
-   if (key == 's') {
-      ofImage scr;// = new ofImage();
-      scr.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
-      scr.saveImage("screenshot.png");
+   if (key == 'p') {
+      
+      isPrinting = true;
+
+      string file = "photo.png";
+
+      ofImage photo;
+      cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
+      photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+      
+      // adjust aspect ratio to 15:10 (photo paper)
+      if (ofGetWidth() == 1600)
+         photo.crop(125, 0, 1350, 900);
+      else if (ofGetWidth() == 1920)
+         photo.crop(150, 0, 1620, 1080);
+      photo.saveImage(file);
+
+      
+      string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " data/" + file);
+      system(mobile_command.c_str());
+
    }
    if (key == ' ') {
       showGui = !showGui;
