@@ -1,7 +1,7 @@
 # general
-bin/libs/
-bin/data/*.png
-bin/openframeworks
+openframeworks/bin/libs/
+openframeworks/bin/data/*.png
+openframeworks/bin/openframeworks
 obj
 .svn
 
