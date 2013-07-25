@@ -251,7 +251,7 @@ void testApp::draw(){
       ofxFatLineOptions opt;
       opt.feather = 20.0;
 
-      int size_of_v = 2;
+      const int size_of_v = 2;
 
       ofVec2f v[size_of_v];
       v[0].x=0; v[0].y=0;

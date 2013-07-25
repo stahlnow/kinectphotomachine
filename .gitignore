@@ -1,5 +1,5 @@
 # general
-bin/lib
+bin/libs/
 bin/data/*.png
 bin/openframeworks
 obj
