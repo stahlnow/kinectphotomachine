@@ -34,13 +34,26 @@ void testApp::setup() {
    mobile_printer_format = settings.getValue("settings:mobile_printer_format", "");
    mobile_printer_quality = settings.getValue("settings:mobile_printer_quality", "");
    mobile_printer_media_type = settings.getValue("settings:mobile_printer_media_type", "");
+    
+    printer_name = settings.getValue("settings:printer_name", "");
+    printer_format = settings.getValue("settings:printer_format", "");
+    printer_quality = settings.getValue("settings:printer_quality", "");
+    printer_media_type = settings.getValue("settings:printer_media_type", "");
 
-   cout << "read settings:"<< endl;
+
+   cout << "Settings:" << endl;
+    cout << "Serial Port" << endl;
    cout << serial_port << endl;
+    cout << "Mobile Printer:" << endl;
    cout << mobile_printer_name << endl;
    cout << mobile_printer_format << endl;
    cout << mobile_printer_quality << endl;
    cout << mobile_printer_media_type << endl;
+    cout << "Printer Station:" << endl;
+    cout << printer_name << endl;
+    cout << printer_format << endl;
+    cout << printer_quality << endl;
+    cout << printer_media_type << endl;
 
    // fx
    postFx.init(ofGetWidth(), ofGetHeight());
@@ -240,6 +253,7 @@ void testApp::draw(){
    // loading animation
    if (!isPrinting && isLoading) {
 
+       /*
       ofPushMatrix();
       ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
@@ -281,6 +295,7 @@ void testApp::draw(){
       glDisableClientState(GL_COLOR_ARRAY);
 
       ofPopMatrix();
+    */
    }
 
 }
@@ -311,11 +326,18 @@ void testApp::keyPressed(int key) {
          photo.crop(125, 0, 1350, 900);
       else if (ofGetWidth() == 1920)
          photo.crop(150, 0, 1620, 1080);
-      photo.saveImage(file);
+      else if (ofGetWidth() == 1080)
+          photo.crop(0, 150, 1080, 1620);
+      photo.saveImage(file);	
 
-      
-      string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " data/" + file);
+    
+      // print photo on mobile printer
+      string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
       system(mobile_command.c_str());
+       
+      string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
+      system(command.c_str());
+     
 
    }
    if (key == ' ') {

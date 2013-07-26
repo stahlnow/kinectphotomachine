@@ -5,7 +5,7 @@
 #include "ofxKinect.h"
 #include "ofxDelaunay.h"
 #include "ofxPostProcessing.h"
-#include "ofxFatLine.h"
+//#include "ofxFatLine.h"
 #include "Arduino.h"
 
   
@@ -54,6 +54,10 @@ private:
    string mobile_printer_format;
    string mobile_printer_quality;
    string mobile_printer_media_type;
+   string printer_name;
+   string printer_format;
+   string printer_quality;
+   string printer_media_type;
 
    
 

@@ -1,12 +1,16 @@
 <Noise_Amount>0.000000000</Noise_Amount>
-<Point_Skip>3</Point_Skip>
+<Point_Skip>2</Point_Skip>
 <Real_Colors>1</Real_Colors>
 <Color_Alpha>255</Color_Alpha>
 <Screen_Rotation>0</Screen_Rotation>
 <settings>
-    <serial_port>/dev/ttyACM0</serial_port>
-    <mobile_printer_name>Officejet_Pro_8600</mobile_printer_name>
-    <mobile_printer_format>Photo10x15.FB</mobile_printer_format>
-    <mobile_printer_quality>Photo</mobile_printer_quality>
-    <mobile_printer_media_type>Glossy</mobile_printer_media_type>
+    <serial_port>/dev/tty.usbmodem1431</serial_port>
+    <mobile_printer_name>HP_Officejet_100_Mobile_L411</mobile_printer_name>
+    <mobile_printer_format>4x6.FullBleed</mobile_printer_format>
+    <mobile_printer_quality>highest</mobile_printer_quality>
+    <mobile_printer_media_type>hp-premium-plus-photo-paper</mobile_printer_media_type>
+    <printer_name>Officejet_Pro_8100</printer_name>
+    <printer_format>4x6.Fullbleed</printer_format>
+    <printer_quality>High</printer_quality>
+    <printer_media_type>com.hp.advanced-photo</printer_media_type>
 </settings>
