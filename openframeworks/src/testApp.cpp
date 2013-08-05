@@ -1,8 +1,6 @@
 #include "testApp.h"
 #include "Arduino.h"
 
-//char **files= new char*[16];
-
 //--------------------------------------------------------------
 void testApp::setup() {
 
@@ -67,19 +65,6 @@ void testApp::setup() {
    ofLog(OF_LOG_VERBOSE, "\tMedia Type: " + printer_media_type); 
 
 
-   // slideshow
-   //int *params= new int[16];
-   //for (int i=0;i<16;i++) files[i]=new char[255];
-   //bool ok = loaderConfig.ReadConfigFile("data/slideshow.config",files,params,2,1);
-
-   //files[0] = "images";
-   //files[1] = "SlideIn";
-   //params[0] = 2;
-   //ofLog(OF_LOG_VERBOSE,"Step: %d",params[0]);
-   //ofLog(OF_LOG_VERBOSE,"Directory: %s",files[0]);
-   //ofLog(OF_LOG_VERBOSE,"Transition: %s",files[1]);
-   //Loading shader
-   //string shaderPath(files[1]);
    transitionShader.loadShader("shaders/" + shader_file);
    loader.start(image_dir);
    ofSetVerticalSync(true);
@@ -93,7 +78,6 @@ void testApp::setup() {
    temp_cur_texture.allocate(1024,1024,GL_RGB); // CHANGE FOR THE SIZE OF THE IMAGES ...
    temp_next_texture.allocate(1024,1024,GL_RGB);
    ofSetFrameRate(35);
-
 
 
    // fx
