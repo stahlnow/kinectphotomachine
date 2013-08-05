@@ -1,5 +1,8 @@
 ofxNetwork
 ofxOpenCv
+ofxDirList
+ofxVectorMath
+ofxVectorGraphics
 ofxXmlSettings
 ofxDelaunay
 ofxGui
