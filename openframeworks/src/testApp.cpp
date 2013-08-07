@@ -13,7 +13,6 @@ void testApp::setup() {
    kinect.init();
    kinect.open();
    kinect.setRegistration(true);
-
    blob.allocate(640, 480, OF_IMAGE_GRAYSCALE);
 
    // gui
@@ -27,7 +26,7 @@ void testApp::setup() {
    gui.loadFromFile("settings.xml");
    showGui = false;
 
-   // load other settings
+   // load settings
    ofxXmlSettings settings;
    settings.loadFile("settings.xml");
 
@@ -51,20 +50,21 @@ void testApp::setup() {
       ofSetLogLevel(OF_LOG_VERBOSE);
    }
 
-   ofLog(OF_LOG_VERBOSE, "### Image directory: " + image_dir);
-   ofLog(OF_LOG_VERBOSE, "### Shader: " + shader_file);
-   ofLog(OF_LOG_VERBOSE, "### Transition steps: %i", transition_steps);
-   ofLog(OF_LOG_VERBOSE, "### Serial Port: " + serial_port);
-   ofLog(OF_LOG_VERBOSE, "### Mobile Printer: " + mobile_printer_name);
-   ofLog(OF_LOG_VERBOSE, "\tFormat: " + mobile_printer_format);
-   ofLog(OF_LOG_VERBOSE, "\tQuality: " + mobile_printer_quality);
-   ofLog(OF_LOG_VERBOSE, "\tMedia Type: " + mobile_printer_media_type); 
-   ofLog(OF_LOG_VERBOSE, "### Station Printer: " + printer_name);
-   ofLog(OF_LOG_VERBOSE, "\tFormat: " + printer_format);
-   ofLog(OF_LOG_VERBOSE, "\tQuality: " + printer_quality);
-   ofLog(OF_LOG_VERBOSE, "\tMedia Type: " + printer_media_type); 
+   ofLog(OF_LOG_NOTICE, "### Image directory: " + image_dir);
+   ofLog(OF_LOG_NOTICE, "### Shader: " + shader_file);
+   ofLog(OF_LOG_NOTICE, "### Transition steps: %i", transition_steps);
+   ofLog(OF_LOG_NOTICE, "### Serial Port: " + serial_port);
+   ofLog(OF_LOG_NOTICE, "### Mobile Printer: " + mobile_printer_name);
+   ofLog(OF_LOG_NOTICE, "\tFormat: " + mobile_printer_format);
+   ofLog(OF_LOG_NOTICE, "\tQuality: " + mobile_printer_quality);
+   ofLog(OF_LOG_NOTICE, "\tMedia Type: " + mobile_printer_media_type); 
+   ofLog(OF_LOG_NOTICE, "### Station Printer: " + printer_name);
+   ofLog(OF_LOG_NOTICE, "\tFormat: " + printer_format);
+   ofLog(OF_LOG_NOTICE, "\tQuality: " + printer_quality);
+   ofLog(OF_LOG_NOTICE, "\tMedia Type: " + printer_media_type); 
 
 
+   // slideshow
    transitionShader.loadShader("shaders/" + shader_file);
    loader.start(image_dir);
    ofSetVerticalSync(true);
@@ -79,6 +79,13 @@ void testApp::setup() {
    temp_next_texture.allocate(1024,1024,GL_RGB);
    ofSetFrameRate(35);
 
+   // loading circle
+   ofVec3f centre = ofVec3f (0,0,0);
+   // centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness, BHGDiameter, color, BHGDegree
+   addGradientShape(centre, 0, 12, 2, 1, 100, pantone165c, 0); // progress
+   addGradientShape(centre, 1, 12, 2, 2, 120, pantone165c, 360); // outline
+   
+   iButtonEndTime = 50; // 50 milliseconds for one loading step (BHGNumSides)
 
    // fx
    postFx.init(ofGetWidth(), ofGetHeight());
@@ -87,6 +94,13 @@ void testApp::setup() {
    postFx.createPass<FxaaPass>();
 
 }
+
+
+void testApp::addGradientShape(ofVec3f centre, int BHGShapeType, int BHGNumSides, float BHGBlur, float BHGThickness, float BHGDiameter, ofColor c_, int BHGDegree) {
+   shapes.push_back(ofxGradientShape(shapeCount, centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness,BHGDiameter, c_,BHGDegree));
+   shapeCount++;
+}
+
 
 
 
@@ -336,49 +350,27 @@ void testApp::draw(){
    // loading animation
    if (!isPrinting && isLoading) {
 
-      /*
-         ofPushMatrix();
-         ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+      float timer = ofGetElapsedTimeMillis() - iButtonStartTime;
 
-         int resolution = 1024;
-         int radius = 100;
-         double w = 2;
-         float loaded = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
-
-         ofxFatLineOptions opt;
-         opt.feather = 20.0;
-
-         const int size_of_v = 2;
-
-         ofVec2f v[size_of_v];
-         v[0].x=0; v[0].y=0;
-         v[1].x=0; v[1].y=radius;
-
-         ofFloatColor color[size_of_v];
-         color[0].set(pantone712c);
-         color[1].set(pantone165c);
-
-         double weight[size_of_v];
-         weight[0] = w;
-         weight[1] = w;
-
-         glEnableClientState(GL_VERTEX_ARRAY);
-         glEnableClientState(GL_COLOR_ARRAY);
-      //glEnable(GL_BLEND);
-
-
-      float minTheta = 0, maxTheta = loaded;
-      for (int i = 0; i < resolution; i++) {
-         float theta  = ofMap(i, 0, resolution - 1, minTheta, maxTheta);
-         v[1].rotate(theta);
-         ofxFatLine(v, color, weight, size_of_v, &opt, true);
+      if(timer >= iButtonEndTime) {
+         shapes[0].run(); // advance loading animation one step
+         iButtonStartTime = ofGetElapsedTimeMillis(); // reset start time
       }
 
+      ofPushMatrix();
+      ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+      ofEnableAlphaBlending();
+      ofEnableBlendMode(OF_BLENDMODE_ADD);
+      glEnableClientState(GL_COLOR_ARRAY);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      for(int i=0;i<shapes.size();i++) {
+         shapes[i].renderBHGradients();
+      }
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisableClientState(GL_COLOR_ARRAY);
-
+      ofDisableAlphaBlending();
       ofPopMatrix();
-      */
+
    }
 
 }
@@ -391,7 +383,7 @@ void testApp::fadeInfadeOut(ofImage* currImg,ofImage* nextImg) {
    temp_cur_texture.loadData(currImg->getPixels(),currImg->width,currImg->height,GL_RGB);
    temp_cur_texture.draw(getCenteredCoordinate(currImg),0,currImg->width,currImg->height); //
    //If the second image disappeared
-   if (progress >=0.5) {
+   if (progress >= 0.5) {
       //Blend della seconda immagine
       glColor4f(1.0f, 1.0f, 1.0f,(progress - 0.5) * 2);   
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);   // takes src brightness (ignore dest color)	
@@ -427,10 +419,13 @@ void testApp::keyPressed(int key) {
 
 
    if (key == 'l') {
-      if (!isLoading)
+      if (!isLoading) {
+         iButtonStartTime = ofGetElapsedTimeMillis();
          isLoading = true;
-      else
+      } else {
+         shapes[0].BHGDegree = 0;
          isLoading = false;
+      }
    }
 
    if (key == 'p') {

@@ -5,11 +5,11 @@
 #include "ofxKinect.h"
 #include "ofxDelaunay.h"
 #include "ofxPostProcessing.h"
-//#include "ofxFatLine.h"
+#include "ofxFatLine.h"
 #include "Arduino.h"
 #include "imgLoader.h"
 #include "ofxShader.h"
-
+#include "ofxGradientShape.h"
 
 static bool isPrinting = false;
 static bool isLoading = false;
@@ -83,7 +83,7 @@ private:
    ofxSlider<int> pointSkip;
    ofxSlider<int> screenRotation;
 
-   // other settings
+   // settings
    string log_level;
    string serial_port;
    string mobile_printer_name;
@@ -105,9 +105,14 @@ private:
    ofxDelaunay del;
    ofImage blob;
 
-   ofFloatColor pantone165c = ofFloatColor(1.0, 0.37, 0.0, 1.0);
-   ofFloatColor pantone163c = ofFloatColor(1.0, 0.61, 0.44, 1.0);
-   ofFloatColor pantone712c = ofFloatColor(0.98, 0.80, 0.68, 1.0);
+   ofFloatColor pantone165c_f = ofFloatColor(1.0, 0.37, 0.0, 1.0);
+   ofFloatColor pantone163c_f = ofFloatColor(1.0, 0.61, 0.44, 1.0);
+   ofFloatColor pantone712c_f = ofFloatColor(0.98, 0.80, 0.68, 1.0);
+
+   ofColor pantone165c = ofColor(255, 95, 0);
+   ofColor pantone163c = ofColor(255, 156, 113);
+   ofColor pantone712c = ofColor(250, 205, 174);
+   
 
 
    // serial
@@ -116,5 +121,12 @@ private:
    // screensaver
    int getCenteredCoordinate(ofImage* image);
 
+   // button loading animation
+   void addGradientShape(ofVec3f centre, int BHGShapeType, int BHGNumSides, float BHGBlur, float BHGThickness, float BHGDiameter, ofColor color, int BHGDegree);
+   vector <ofxGradientShape> shapes;
+   int shapeCount;
+   bool bButtonTimerReached;
+   int iButtonStartTime;
+   int iButtonEndTime;
 
 };
