@@ -1,7 +1,7 @@
 # general
 openframeworks/bin/libs/
-openframeworks/bin/data/*.png
-openframeworks/bin/data/images/*.jpg
+openframeworks/bin/data/photos/*.png
+openframeworks/bin/data/slides/*.jpg
 openframeworks/bin/openframeworks
 openframeworks/bin/openframeworksDebug
 obj
