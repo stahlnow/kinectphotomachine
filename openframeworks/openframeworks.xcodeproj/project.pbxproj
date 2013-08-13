@@ -176,6 +176,7 @@
 		1C5856AF17BAA27C007ED5C4 /* SwirlGrid.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = SwirlGrid.vert; sourceTree = "<group>"; };
 		1C5856B017BAA27C007ED5C4 /* openframeworks.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = openframeworks.app; sourceTree = "<group>"; };
 		1C5856B117BAA27C007ED5C4 /* openframeworksDebug.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = openframeworksDebug.app; sourceTree = "<group>"; };
+		1CA2EA0B17BAB92800333627 /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		1a0e7947b7310fdfa6215792f5806538 /* highgui_c.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = highgui_c.h; path = ../../of_v0.7.4_osx_release/addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui_c.h; sourceTree = SOURCE_ROOT; };
 		1bc5a32a74492ef549bbe6b064439db6 /* DofPass.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = DofPass.cpp; path = ../../of_v0.7.4_osx_release/addons/ofxPostProcessing/src/DofPass.cpp; sourceTree = SOURCE_ROOT; };
 		1bea170f1887ae2970d29827b03a7571 /* ts_gtest.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ts_gtest.h; path = ../../of_v0.7.4_osx_release/addons/ofxOpenCv/libs/opencv/include/opencv2/ts/ts_gtest.h; sourceTree = SOURCE_ROOT; };
@@ -508,6 +509,7 @@
 		1C58568817BAA27C007ED5C4 /* data */ = {
 			isa = PBXGroup;
 			children = (
+				1CA2EA0A17BAB92800333627 /* photos */,
 				1C58568917BAA27C007ED5C4 /* .gitkeep */,
 				1C58568A17BAA27C007ED5C4 /* images */,
 				1C58569C17BAA27C007ED5C4 /* settings.xml */,
@@ -563,6 +565,14 @@
 				1C5856AF17BAA27C007ED5C4 /* SwirlGrid.vert */,
 			);
 			path = shaders;
+			sourceTree = "<group>";
+		};
+		1CA2EA0A17BAB92800333627 /* photos */ = {
+			isa = PBXGroup;
+			children = (
+				1CA2EA0B17BAB92800333627 /* .gitkeep */,
+			);
+			path = photos;
 			sourceTree = "<group>";
 		};
 		1e45f8c3ccff6847bff957aa83a88979 /* flann */ = {
