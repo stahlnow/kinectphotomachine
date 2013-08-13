@@ -3,8 +3,27 @@
 Arduino::Arduino(string serialPort)
 : serialPort(serialPort) {
 
-   if (!serial.setup(serialPort, 19200)){
-      ofLog(OF_LOG_ERROR, "Could not open serial port.");
+   vector <ofSerialDeviceInfo> dl = serial.getDeviceList();
+
+   ofLog(OF_LOG_NOTICE, "### Listing serial ports:");
+
+   for (int i = 0; i < dl.size(); i++) {
+      string path = dl[i].getDevicePath();
+      string name = dl[i].getDeviceName();
+      ostringstream idString; idString << dl[i].getDeviceID();
+      ofLog(OF_LOG_NOTICE, "\t" + path + ", " + name + ", " + idString.str());
+
+      if (serialPort == "auto") { // if user defined "auto" in settings, auto assign serial devices that contain ACM (linux) or usbmodem (OSX)
+         if (std::string::npos != path.find("/dev/ttyACM0") || std::string::npos != path.find("usbmodem")) {
+            serialPort = path;
+         }
+      }
+
+   }
+
+   if (!serial.setup(serialPort, 19200)) {
+      ofLog(OF_LOG_ERROR, "Could not open serial port \"" + serialPort + "\", exit...");
+      exit(-1);
    }
 
 }

@@ -42,7 +42,7 @@ void testApp::setup() {
    shader_file = settings.getValue("settings:shader_file", "SlideIn");
    transition_steps = settings.getValue("settings:transition_steps", 2);
     
-    photo_dir = settings.getValue("settings:photo_dir", "photos");
+   photo_dir = settings.getValue("settings:photo_dir", "photos");
 
    if (log_level == "verbose") {
       ofSetLogLevel(OF_LOG_VERBOSE);
@@ -63,8 +63,8 @@ void testApp::setup() {
 
 
    // start arduino serial
-   //arduino = new Arduino(serial_port);
-   //arduino->startThread(true, false);
+   arduino = new Arduino(serial_port);
+   arduino->startThread(true, false);
 
    // kinect
    kinect.init();

@@ -13,7 +13,7 @@
     <shader_file>SlideIn</shader_file>
     <transition_step>2</transition_step>
     <photo_dir>photos</photo_dir>
-    <serial_port>/dev/tty.usbmodem1431</serial_port>
+    <serial_port>/dev/ttyACM0</serial_port>
     <mobile_printer_name>HP_Officejet_100_Mobile_L411</mobile_printer_name>
     <mobile_printer_format>4x6.FullBleed</mobile_printer_format>
     <mobile_printer_quality>highest</mobile_printer_quality>
