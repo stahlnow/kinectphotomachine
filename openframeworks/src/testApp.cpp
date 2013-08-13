@@ -1,28 +1,24 @@
 #include "testApp.h"
-#include "Arduino.h"
 
-//--------------------------------------------------------------
 void testApp::setup() {
 
-   mode = MODE_KINECT;
-
-   //arduino.startThread(true, false);
-
-   // kinect
    ofSetFrameRate(30);
-   kinect.init();
-   kinect.open();
-   kinect.setRegistration(true);
-   blob.allocate(640, 480, OF_IMAGE_GRAYSCALE);
-
+   
    // gui
    gui.setup();
    gui.setPosition(ofPoint(10,10));
    gui.add(noiseAmount.setup("Noise Amount", 0.0, 0.0, 20.0));
    gui.add(pointSkip.setup("Point Skip", 3, 1, 20));
    gui.add(useRealColors.setup("Real Colors", true));
+   gui.add(drawWireMesh.setup("Wire Mesh", false));
    gui.add(colorAlpha.setup("Color Alpha", 255, 0, 255));
+   gui.add(kinectZTranslation.setup("Camera Z", 1300, 0, 3000));
+   gui.add(kinectRed.setup("Red", 255, 0, 255));
+   gui.add(kinectGreen.setup("Green", 255, 0, 255));
+   gui.add(kinectBlue.setup("Blue", 255, 0, 255));
    gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
+   gui.add(hasSlideshow.setup("Slideshow", false));
+   gui.add(slideDuration.setup("Slide Duration", 5, 2, 120));
    gui.loadFromFile("settings.xml");
    showGui = false;
 
@@ -64,44 +60,29 @@ void testApp::setup() {
    ofLog(OF_LOG_NOTICE, "\tMedia Type: " + printer_media_type); 
 
 
-   // slideshow
-   transitionShader.loadShader("shaders/" + shader_file);
-   loader.start(image_dir);
-   ofSetVerticalSync(true);
-   currImage=NULL;
-   nextImg=NULL;
-   loadNextImg=false;
-   transitionStarted = false;
-   transitionEnded = false;
-   progress = 0;
-   step = (float)transition_steps / 100;
-   temp_cur_texture.allocate(1024,1024,GL_RGB); // CHANGE FOR THE SIZE OF THE IMAGES ...
-   temp_next_texture.allocate(1024,1024,GL_RGB);
-   ofSetFrameRate(35);
+   // start arduino serial
+   //arduino = new Arduino(serial_port);
+   //arduino->startThread(true, false);
 
-   // loading circle
-   ofVec3f centre = ofVec3f (0,0,0);
-   // centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness, BHGDiameter, color, BHGDegree
-   addGradientShape(centre, 0, 12, 2, 1, 100, pantone165c, 0); // progress
-   addGradientShape(centre, 1, 12, 2, 2, 120, pantone165c, 360); // outline
-   
-   iButtonEndTime = 50; // 50 milliseconds for one loading step (BHGNumSides)
-
-   // fx
+   // kinect
+   kinect.init();
+   kinect.open();
+   kinect.setRegistration(true);
+   blob.allocate(640, 480, OF_IMAGE_GRAYSCALE);
    postFx.init(ofGetWidth(), ofGetHeight());
-
    postFx.createPass<BloomPass>();
    postFx.createPass<FxaaPass>();
 
+   // slideshow
+   slideshow = new Slideshow(image_dir, shader_file, transition_steps, slideDuration * 1000);
+   slideshow->startThread(true, false);  
+
+   if (hasSlideshow)
+      mode = MODE_SLIDESHOW;
+   else
+      mode = MODE_KINECT;
+
 }
-
-
-void testApp::addGradientShape(ofVec3f centre, int BHGShapeType, int BHGNumSides, float BHGBlur, float BHGThickness, float BHGDiameter, ofColor c_, int BHGDegree) {
-   shapes.push_back(ofxGradientShape(shapeCount, centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness,BHGDiameter, c_,BHGDegree));
-   shapeCount++;
-}
-
-
 
 
 //--------------------------------------------------------------
@@ -115,9 +96,7 @@ void testApp::update(){
       if(kinect.isFrameNew()) {
          del.reset();
 
-
          unsigned char* pix = new unsigned char[640*480];
-
          unsigned char* gpix = new unsigned char[640*480];
 
          for(int x=0;x<640;x+=1) {
@@ -183,9 +162,10 @@ void testApp::update(){
             ofColor c = kinect.getColorAt(v.x+320.0, v.y+240.0);
 
             if(!useRealColors)
-               c = ofColor(255,0,0);
+               c = ofColor(255,250,250);
 
-            ofColor o = ofColor(255, 95, 0);
+            // multiply by other color
+            ofColor o = ofColor(kinectRed, kinectGreen, kinectBlue);  // Helper::pantone712c; // ofColor(255, 95, 0);
             c *= o;
 
             c.a = colorAlpha;
@@ -241,33 +221,11 @@ void testApp::update(){
       }
 
       break;
-   case MODE_SCREENSAVER:
 
-      if(currImage != NULL){
-         if (loadNextImg) {
-            ofImage* temp_nextImg = loader.getNextTexture();
-            nextImg = temp_nextImg;  
-            loadNextImg=false;
-         }
-         if(transitionStarted) {
-            progress = progress + step;
-            if(transitionEnded) {
-               transitionStarted = false;
-               ofLog(OF_LOG_VERBOSE,"Animation ended, swapping");
-               currImage=nextImg;
-               loader.releaseCurrentTexture();
-               transitionEnded = false;
-               progress = 0;
-            }
-         }
-      } else {
-         //first time i load a picture
-         ofImage* temp_nextImg = loader.getNextTexture();
-         currImage = temp_nextImg;  
-      }
-
-
+   case MODE_SLIDESHOW:
+      slideshow->update();
       break;
+
    default:
       break;
    };
@@ -279,11 +237,13 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
 
+   // black background
+   ofBackground(0, 0, 0);
    
    switch(mode) {
+
    case MODE_KINECT:
 
-      ofBackground(0, 0, 0);
       //glEnable(GL_DEPTH_TEST);
 
       ofPushMatrix();
@@ -292,7 +252,7 @@ void testApp::draw(){
       cam.setScale(1,-1,1);
 
       ofSetColor(255, 255, 255);
-      ofTranslate(0, -80, 1100);
+      ofTranslate(0, -80, kinectZTranslation);
       ofFill();
 
       postFx.begin();
@@ -312,92 +272,64 @@ void testApp::draw(){
 
       ofPushMatrix();
       ofTranslate(0, 0, 0.5);
-      wireframeMesh.drawWireframe();
+      if (drawWireMesh)
+         wireframeMesh.drawWireframe();
       ofPopMatrix();
       cam.end();
       ofPopMatrix();
 
       postFx.end();
 
-      if(showGui) {
-         ofPushStyle();
-         ofSetColor(255,255,255,255);
-         gui.draw();
-         ofPopStyle();
-      }
-      ofSetColor(255, 255, 255);
+      break;
+
+   case MODE_SLIDESHOW:
+      slideshow->draw();
 
       break;
-   case MODE_SCREENSAVER:
-      if(currImage!=NULL)
-      {
-         if (transitionStarted && nextImg!=NULL){
-            transitionEnded = false;
-            //crossFadeTransition(currImage,nextImg);
-            fadeInfadeOut(currImage,nextImg);
-            //shaderTransition(currImage,nextImg);
-         } else {
-            ofSetHexColor(0xffffff);
-            temp_cur_texture.loadData(currImage->getPixels(),currImage->width,currImage->height,GL_RGB);
-            temp_cur_texture.draw(getCenteredCoordinate(currImage),0,currImage->width,currImage->height); //
-         }
-      }
-      break;
+
    default:
       break;
    };
 
-   // loading animation
-   if (!isPrinting && isLoading) {
 
-      float timer = ofGetElapsedTimeMillis() - iButtonStartTime;
+   // draw gui
+   if(showGui) {
+      ofPushStyle();
+      ofSetColor(255,255,255,255);
+      gui.draw();
+      ofPopStyle();
+   }
+   ofSetColor(255, 255, 255);
 
-      if(timer >= iButtonEndTime) {
-         shapes[0].run(); // advance loading animation one step
-         iButtonStartTime = ofGetElapsedTimeMillis(); // reset start time
-      }
 
+   // show loading wheel
+   if (isLoading) {
       ofPushMatrix();
       ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
       ofEnableAlphaBlending();
-      ofEnableBlendMode(OF_BLENDMODE_ADD);
+      ofEnableBlendMode(OF_BLENDMODE_ALPHA); // _ADD for transperancy
       glEnableClientState(GL_COLOR_ARRAY);
       glEnableClientState(GL_VERTEX_ARRAY);
-      for(int i=0;i<shapes.size();i++) {
-         shapes[i].renderBHGradients();
+      for(int i=0;i<progressWheel.shapes.size();i++) {
+         (progressWheel.shapes)[i].renderBHGradients();
       }
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisableClientState(GL_COLOR_ARRAY);
       ofDisableAlphaBlending();
       ofPopMatrix();
+      
+      // check if loaded
+      if (progressWheel.shapes[0].BHGDegree == 360) {
+         progressWheel.shapes[0].BHGDegree = 0;
+         progressWheel.stopThread();
+         isLoading = false;
+         mode = MODE_KINECT;
+      }
+
 
    }
-
 }
 
-
-void testApp::fadeInfadeOut(ofImage* currImg,ofImage* nextImg) {
-   glEnable(GL_BLEND);
-   glColor4f(1.0f, 1.0f, 1.0f,1 - (progress * 2));   
-   glBlendFunc(GL_SRC_ALPHA, GL_ZERO);   // takes src brightness (ignore dest color)	
-   temp_cur_texture.loadData(currImg->getPixels(),currImg->width,currImg->height,GL_RGB);
-   temp_cur_texture.draw(getCenteredCoordinate(currImg),0,currImg->width,currImg->height); //
-   //If the second image disappeared
-   if (progress >= 0.5) {
-      //Blend della seconda immagine
-      glColor4f(1.0f, 1.0f, 1.0f,(progress - 0.5) * 2);   
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE);   // takes src brightness (ignore dest color)	
-      temp_cur_texture.loadData(nextImg->getPixels(),nextImg->width,nextImg->height,GL_RGB);
-      temp_cur_texture.draw(getCenteredCoordinate(nextImg),0,nextImg->width,nextImg->height); //
-      if (progress >= 1.0) transitionEnded = true;
-   }
-}
-
-int testApp::getCenteredCoordinate(ofImage* image) {
-   int x = 0;
-   if (image->width != 1024) x = 512 - (image->width / 2);
-   return x;
-}
 
 
 
@@ -405,62 +337,116 @@ int testApp::getCenteredCoordinate(ofImage* image) {
 void testApp::keyPressed(int key) {
 
 
-   if (key == 'm') {
-      if (mode == MODE_KINECT) 
-         mode = MODE_SCREENSAVER;
-      else
+   switch(key) {
+   case 'm':
+      if (mode == MODE_KINECT) {
+         mode = MODE_SLIDESHOW;
+      } else {
          mode = MODE_KINECT;
-   }
+      }
+      break;
 
-   if (key == 'a'){
-      loadNextImg=true;
-      transitionStarted = true;
-   }
-
-
-   if (key == 'l') {
+   case 'l':
       if (!isLoading) {
-         iButtonStartTime = ofGetElapsedTimeMillis();
+         progressWheel.startThread(true, false);
          isLoading = true;
       } else {
-         shapes[0].BHGDegree = 0;
+         progressWheel.shapes[0].BHGDegree = 0;
+         progressWheel.stopThread();
          isLoading = false;
       }
-   }
+      break;
 
-   if (key == 'p') {
+   case 'p':
+      {
+         
+         isPrinting = true;
 
-      isPrinting = true;
+         string file = "photo.png";
 
-      string file = "photo.png";
+         ofImage photo;
+         cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
+         photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
-      ofImage photo;
-      cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
-      photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+         // adjust aspect ratio to 15:10 (photo paper), crop(x,y,width,height), where x,y is position.
+         if (ofGetWidth() == 1920)
+            photo.crop(150, 0, 1620, 1080);
+         
+         else if (ofGetWidth() == 1600)
+            photo.crop(125, 0, 1350, 900);
 
-      // adjust aspect ratio to 15:10 (photo paper)
-      if (ofGetWidth() == 1600)
-         photo.crop(125, 0, 1350, 900);
-      else if (ofGetWidth() == 1920)
-         photo.crop(150, 0, 1620, 1080);
-      else if (ofGetWidth() == 1080)
-         photo.crop(0, 150, 1080, 1620);
-      photo.saveImage(file);	
+         // portrait modes
+         else if (ofGetWidth() == 1080)
+            photo.crop(0, 150, 1080, 1620);
 
-
-      // print photo on mobile printer
-      string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
-      system(mobile_command.c_str());
-
-      string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
-      system(command.c_str());
+         else if (ofGetWidth() == 900)
+            photo.crop(0, 125, 900, 1350);
+         
+         photo.saveImage(file);
 
 
-   }
-   if (key == ' ') {
+         // print photo on mobile printer
+         //
+         /*
+         string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
+         system(mobile_command.c_str());
+
+         string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
+         system(command.c_str());
+         */
+      }
+      break;
+
+   case '1':
+      iKinectServoAngle++;
+      if(iKinectServoAngle > 30) iKinectServoAngle = 30;
+      kinect.setCameraTiltAngle(iKinectServoAngle);
+      break;
+
+   case '2':
+      iKinectServoAngle--;
+      if (iKinectServoAngle < -30) iKinectServoAngle = -30;
+      kinect.setCameraTiltAngle(iKinectServoAngle);
+      break;
+
+   case ' ':
       showGui = !showGui;
-   }
+      break;
+
+   default:
+      break;
+
+   };
 }
+
+
+void testApp::exit() {
+
+   // auto save gui settings
+   gui.saveToFile("settings.xml");
+  
+   // close serial port and stop thread
+   if (arduino != 0) {
+      arduino->lock();
+      arduino->serial.close();
+      arduino->unlock();
+      if (arduino->isThreadRunning()) arduino->waitForThread(true);
+      delete arduino;
+      arduino = 0;
+   }
+
+   progressWheel.waitForThread(true);
+
+   // remove slideshow
+   if (slideshow->isThreadRunning()) slideshow->waitForThread(true); // stop thread
+   delete slideshow;
+   slideshow = 0;
+
+   // close kinect
+   kinect.close();
+
+}
+
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key){
@@ -497,31 +483,7 @@ void testApp::gotMessage(ofMessage msg){
 
 }
 
-void testApp::exit() {
 
-   // close serial port and stop thread
-   //arduino.lock();
-   //arduino.serial.close();
-   //arduino.unlock();
-   arduino.stopThread();
-
-   // close kinect
-   kinect.close();
-
-   // save settings
-   gui.saveToFile("settings.xml");
-
-   /*
-   if (files != 0) {
-      for (int i=0;i<16;i++) {
-         delete []files[i];
-         files[i] = 0;
-      }
-      delete []files;
-      files = 0;
-   }
-   */
-}
 
 //--------------------------------------------------------------
 void testApp::dragEvent(ofDragInfo dragInfo){ 

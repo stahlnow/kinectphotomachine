@@ -1,14 +1,18 @@
 <Noise_Amount>0.000000000</Noise_Amount>
 <Point_Skip>3</Point_Skip>
 <Real_Colors>1</Real_Colors>
+<Wire_Mesh>0</Wire_Mesh>
 <Color_Alpha>255</Color_Alpha>
+<Kinect_Z_Translation>1300</Kinect_Z_Translation>
 <Screen_Rotation>0</Screen_Rotation>
+<Slideshow>1</Slideshow>
+<Slide_Duration>6</Slide_Duration>
 <settings>
     <log_level>verbose</log_level>
     <image_dir>images</image_dir>
     <shader_file>SlideIn</shader_file>
     <transition_step>2</transition_step>
-    <serial_port>/dev/tty.usbmodem1431</serial_port>
+    <serial_port>/dev/ttyACM0</serial_port>
     <mobile_printer_name>HP_Officejet_100_Mobile_L411</mobile_printer_name>
     <mobile_printer_format>4x6.FullBleed</mobile_printer_format>
     <mobile_printer_quality>highest</mobile_printer_quality>
@@ -18,3 +22,8 @@
     <printer_quality>High</printer_quality>
     <printer_media_type>com.hp.advanced-photo</printer_media_type>
 </settings>
+<Camera_Z>1290</Camera_Z>
+<Slide_Duration>8</Slide_Duration>
+<Red>255</Red>
+<Green>80</Green>
+<Blue>0</Blue>

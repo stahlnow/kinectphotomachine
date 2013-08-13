@@ -1,65 +1,21 @@
 #ifndef __ARDUINO_H__
 #define __ARDUINO_H__
 
+#include "ofThread.h"
+#include "ofSerial.h"
+#include "ofLog.h"
+
 class Arduino : public ofThread  {
 
 public:
-
-   static const int COMMAND_LENGTH = 64;
-
-   void threadedFunction() {
-
-      if (!serial.setup("/dev/ttyACM0", 19200)){
-         cout << "could not open serial port." << endl;
-      }
-
-      unsigned char buffer[COMMAND_LENGTH];
-
-      while(isThreadRunning()) {
-
-         if (serial.available() >= COMMAND_LENGTH) {
-         
-            int result = serial.readBytes(buffer, COMMAND_LENGTH);
-
-            //string input(buffer, buffer + sizeof buffer / sizeof buffer[0] );
-
-            // check for error code
-            if ( result == OF_SERIAL_ERROR ) {
-               cout << "unrecoverable error reading from serial" << endl;
-               break;
-
-            } else if ( result == OF_SERIAL_NO_DATA ) {   
-               cout << "nothing was read, try again." << endl;
-            
-            } else {
-               
-               int value = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16) | (buffer[8] << 24);
-               cout << value << endl;
-               serial.flush();
-
-               /*
-               cout << input.substr(0, 13) << endl;
-               
-               int p0 = input.rfind("START", input.length());
-               int p1 = input.rfind("STOP", input.length());
-
-               if (p0 > -1 && p1 > -1) {
-                  int value = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16) | (buffer[8] << 24);
-                  cout << "found START as " << input.substr(p0, 5) << " and STOP as " << input.substr(p1, 4) << " value is: " << value << endl;
-               }
-               */
-            
-            }
-         }
-      }
-
-      cout << "closing serial port..." << endl;
-      serial.close();
-
-   }
-
+   Arduino(string serialPort);
+   void threadedFunction();
 
    ofSerial serial;
+
+private:
+   string serialPort;
+   static const int COMMAND_LENGTH = 64;
 
 };
 
