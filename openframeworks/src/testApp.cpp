@@ -38,15 +38,17 @@ void testApp::setup() {
    printer_quality = settings.getValue("settings:printer_quality", "");
    printer_media_type = settings.getValue("settings:printer_media_type", "");
 
-   image_dir = settings.getValue("settings:image_dir", "images");
+   slides_dir = settings.getValue("settings:slides_dir", "slides");
    shader_file = settings.getValue("settings:shader_file", "SlideIn");
    transition_steps = settings.getValue("settings:transition_steps", 2);
+    
+    photo_dir = settings.getValue("settings:photo_dir", "photos");
 
    if (log_level == "verbose") {
       ofSetLogLevel(OF_LOG_VERBOSE);
    }
 
-   ofLog(OF_LOG_NOTICE, "### Image directory: " + image_dir);
+   ofLog(OF_LOG_NOTICE, "### Slides directory: " + slides_dir);
    ofLog(OF_LOG_NOTICE, "### Shader: " + shader_file);
    ofLog(OF_LOG_NOTICE, "### Transition steps: %i", transition_steps);
    ofLog(OF_LOG_NOTICE, "### Serial Port: " + serial_port);
@@ -74,7 +76,7 @@ void testApp::setup() {
    postFx.createPass<FxaaPass>();
 
    // slideshow
-   slideshow = new Slideshow(image_dir, shader_file, transition_steps, slideDuration * 1000);
+   slideshow = new Slideshow(slides_dir, shader_file, transition_steps, slideDuration * 1000);
    slideshow->startThread(true, false);  
 
    if (hasSlideshow)
@@ -361,11 +363,20 @@ void testApp::keyPressed(int key) {
       {
          
          isPrinting = true;
-
-         string file = "photo.png";
-
+          
+          // create filename
+          time_t rawtime;
+          struct tm * timeinfo;
+          char file [80]; 
+          time (&rawtime);
+          timeinfo = localtime (&rawtime);
+          strftime (file, 80, "photo-%F_%H-%M-%S.png", timeinfo);
+                    
+          string fullpath = ofToDataPath(photo_dir + "/" + file);
+        
+          // grab screen
          ofImage photo;
-         cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
+         //cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
          photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
          // adjust aspect ratio to 15:10 (photo paper), crop(x,y,width,height), where x,y is position.
@@ -382,12 +393,17 @@ void testApp::keyPressed(int key) {
          else if (ofGetWidth() == 900)
             photo.crop(0, 125, 900, 1350);
          
-         photo.saveImage(file);
+          // save image
+         photo.saveImage(fullpath);	
 
-
-         // print photo on mobile printer
-         //
-         /*
+          #ifdef __APPLE__
+          // convert to cmyk
+          string conversion_command("sips -m " + ofToDataPath("CMYK.icc") + " " + fullpath);
+          system(conversion_command.c_str());
+          #endif
+          
+          // print photo on mobile printer
+          /*
          string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
          system(mobile_command.c_str());
 

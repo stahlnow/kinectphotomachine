@@ -1,5 +1,16 @@
 #pragma once
 
+#include <stdio.h>  /* defines FILENAME_MAX */
+#ifdef WINDOWS
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+
+#include <time.h>
+
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxKinect.h"
@@ -82,9 +93,11 @@ private:
    string printer_quality;
    string printer_media_type;
 
-   string image_dir;
+   string slides_dir;
    string shader_file;
    int transition_steps;
+    
+    string photo_dir;
   
    // Arduino
    Arduino* arduino;
