@@ -14,9 +14,6 @@
 #include "ProgressWheel.h"
 #include "Slideshow.h"
 
-static bool isPrinting = false;
-static bool isLoading = false;
-
 class testApp : public ofBaseApp {
 
 public:
@@ -71,6 +68,8 @@ private:
    ofxSlider<int> kinectRed;
    ofxSlider<int> kinectGreen;
    ofxSlider<int> kinectBlue;
+    ofxSlider<int> sensorMinimum;
+    ofxSlider<int> sensorMaximum;
 
    // Settings
    string log_level;
@@ -97,6 +96,7 @@ private:
    Slideshow* slideshow;
    
    // Loading animation
+    bool showWheel = false;
    ProgressWheel progressWheel;
 
 };

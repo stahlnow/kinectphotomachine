@@ -1,5 +1,9 @@
 #include "Helper.h"
 
+bool Helper::isLoading(false);
+bool Helper::isButtonActive(false);
+bool Helper::canSwitch(true);
+
 const ofColor Helper::darkOrange (255, 80, 0);
 
 const ofColor Helper::pantone165c (255, 95, 0);

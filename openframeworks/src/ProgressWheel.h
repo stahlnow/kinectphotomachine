@@ -1,8 +1,9 @@
-#ifndef __PROGRESS_WHEEL_H_
-#define __PROGRESS_WHEEL_H_
+#ifndef __PROGRESS_WHEEL_H__
+#define __PROGRESS_WHEEL_H__
 
-#include "ofxGradientShape.h"
 #include "Helper.h"
+#include "ofxGradientShape.h"
+
 
 class ProgressWheel : public ofThread  {
 

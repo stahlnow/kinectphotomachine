@@ -6,6 +6,11 @@
 class Helper {
 
 public:
+    
+    static bool isLoading;      
+    static bool isButtonActive; // true, if user touches button
+    static bool canSwitch; // true, if user can switch mode
+    
    static const ofColor darkOrange;
 
    static const ofColor pantone165c;

@@ -1,7 +1,7 @@
 #include "Arduino.h"
 
-Arduino::Arduino(string serialPort)
-: serialPort(serialPort) {
+Arduino::Arduino(string serialPort, int sensorMinimum, int sensorMaximum)
+: serialPort(serialPort), sensorMinimum(sensorMinimum), sensorMaximum(sensorMaximum) {
 
    vector <ofSerialDeviceInfo> dl = serial.getDeviceList();
 
@@ -14,7 +14,7 @@ Arduino::Arduino(string serialPort)
       ofLog(OF_LOG_NOTICE, "\t" + path + ", " + name + ", " + idString.str());
 
       if (serialPort == "auto") { // if user defined "auto" in settings, auto assign serial devices that contain ACM (linux) or usbmodem (OSX)
-         if (std::string::npos != path.find("/dev/ttyACM0") || std::string::npos != path.find("usbmodem")) {
+         if (std::string::npos != path.find("ACM") || std::string::npos != path.find("tty.usbmodem")) {
             serialPort = path;
          }
       }
@@ -47,8 +47,23 @@ void Arduino::threadedFunction() {
             ofLog(OF_LOG_NOTICE, "Serial: Nothing was read, continue..");
 
          } else {
-            int value = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16) | (buffer[8] << 24);
-            ofLog(OF_LOG_VERBOSE, "Serial value: %i", value);
+            int value = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24);
+             
+             ofLog(OF_LOG_NOTICE, "Serial value: %i", value);
+             
+             if (value > sensorMinimum && value < sensorMaximum) {
+                 if (!Helper::isButtonActive) {
+                     ofLog(OF_LOG_NOTICE, "Button is active");
+                     Helper::isButtonActive = true;
+                 }
+             }
+             else {
+                 if (Helper::isButtonActive) {
+                     Helper::isButtonActive = false;
+                     Helper::canSwitch = true;
+                 }
+             }
+             
             serial.flush();
          }
       }

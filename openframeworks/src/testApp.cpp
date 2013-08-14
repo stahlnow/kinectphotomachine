@@ -19,6 +19,8 @@ void testApp::setup() {
    gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
    gui.add(hasSlideshow.setup("Slideshow", false));
    gui.add(slideDuration.setup("Slide Duration", 5, 2, 120));
+   gui.add(sensorMinimum.setup("Sensor Minimum", 3000, 0, 20000));
+   gui.add(sensorMaximum.setup("Sensor Maximum", 5000, 0, 20000));
    gui.loadFromFile("settings.xml");
    showGui = false;
 
@@ -52,6 +54,7 @@ void testApp::setup() {
    ofLog(OF_LOG_NOTICE, "### Shader: " + shader_file);
    ofLog(OF_LOG_NOTICE, "### Transition steps: %i", transition_steps);
    ofLog(OF_LOG_NOTICE, "### Serial Port: " + serial_port);
+
    ofLog(OF_LOG_NOTICE, "### Mobile Printer: " + mobile_printer_name);
    ofLog(OF_LOG_NOTICE, "\tFormat: " + mobile_printer_format);
    ofLog(OF_LOG_NOTICE, "\tQuality: " + mobile_printer_quality);
@@ -63,7 +66,7 @@ void testApp::setup() {
 
 
    // start arduino serial
-   arduino = new Arduino(serial_port);
+   arduino = new Arduino(serial_port, sensorMinimum, sensorMaximum);
    arduino->startThread(true, false);
 
    // kinect
@@ -231,6 +234,16 @@ void testApp::update(){
    default:
       break;
    };
+    
+    
+    if (!progressWheel.isThreadRunning() && Helper::isButtonActive && Helper::canSwitch) {
+        progressWheel.startThread(true, false);
+        showWheel = true;
+    } else if (!Helper::isButtonActive) {
+        progressWheel.shapes[0].BHGDegree = 0;
+        progressWheel.stopThread();
+        showWheel = false;
+    }
 
 
 }
@@ -305,7 +318,7 @@ void testApp::draw(){
 
 
    // show loading wheel
-   if (isLoading) {
+    if (showWheel) {
       ofPushMatrix();
       ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
       ofEnableAlphaBlending();
@@ -324,12 +337,23 @@ void testApp::draw(){
       if (progressWheel.shapes[0].BHGDegree == 360) {
          progressWheel.shapes[0].BHGDegree = 0;
          progressWheel.stopThread();
-         isLoading = false;
-         mode = MODE_KINECT;
+         Helper::canSwitch = false;
+         showWheel = false;
+         
+          switch(mode) {
+                  
+              case MODE_KINECT:
+                  mode = MODE_SLIDESHOW;
+                  break;
+              case MODE_SLIDESHOW:
+                  mode = MODE_KINECT;
+                  break;
+              default:
+                  break;
+          
+          };
       }
-
-
-   }
+    } 
 }
 
 
@@ -349,20 +373,12 @@ void testApp::keyPressed(int key) {
       break;
 
    case 'l':
-      if (!isLoading) {
-         progressWheel.startThread(true, false);
-         isLoading = true;
-      } else {
-         progressWheel.shapes[0].BHGDegree = 0;
-         progressWheel.stopThread();
-         isLoading = false;
-      }
       break;
 
    case 'p':
       {
          
-         isPrinting = true;
+         //isPrinting = true;
           
           // create filename
           time_t rawtime;
