@@ -176,6 +176,7 @@
 		1C5856AF17BAA27C007ED5C4 /* SwirlGrid.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = SwirlGrid.vert; sourceTree = "<group>"; };
 		1C5856B017BAA27C007ED5C4 /* openframeworks.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = openframeworks.app; sourceTree = "<group>"; };
 		1C5856B117BAA27C007ED5C4 /* openframeworksDebug.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = openframeworksDebug.app; sourceTree = "<group>"; };
+		1C90B57417BC06C90075718F /* Countdown.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Countdown.h; sourceTree = "<group>"; };
 		1CA2EA0B17BAB92800333627 /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		1a0e7947b7310fdfa6215792f5806538 /* highgui_c.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = highgui_c.h; path = ../../of_v0.7.4_osx_release/addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui_c.h; sourceTree = SOURCE_ROOT; };
 		1bc5a32a74492ef549bbe6b064439db6 /* DofPass.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = DofPass.cpp; path = ../../of_v0.7.4_osx_release/addons/ofxPostProcessing/src/DofPass.cpp; sourceTree = SOURCE_ROOT; };
@@ -974,6 +975,7 @@
 				c5282d6f5f15fbf19b46fa5468732e47 /* ProgressWheel.h */,
 				49221549c04e99c86d5f7d6dc0e88e6d /* Slideshow.cpp */,
 				5df3a5e6a717971e6d8ede53400ec876 /* Slideshow.h */,
+				1C90B57417BC06C90075718F /* Countdown.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;

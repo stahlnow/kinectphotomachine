@@ -14,7 +14,8 @@ public:
    void threadedFunction();
    void update();
    void draw();
-   
+    void reset();
+
 private:
    ofImage* loadImage(string filePath);
    void fadeInfadeOut(ofImage* currImg,ofImage* nextImg);

@@ -3,10 +3,11 @@
 void testApp::setup() {
 
    ofSetFrameRate(30);
+   ofHideCursor();
    
    // gui
    gui.setup();
-   gui.setPosition(ofPoint(10,10));
+   gui.setPosition(ofPoint(10,40));
    gui.add(noiseAmount.setup("Noise Amount", 0.0, 0.0, 20.0));
    gui.add(pointSkip.setup("Point Skip", 3, 1, 20));
    gui.add(useRealColors.setup("Real Colors", true));
@@ -19,8 +20,8 @@ void testApp::setup() {
    gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
    gui.add(hasSlideshow.setup("Slideshow", false));
    gui.add(slideDuration.setup("Slide Duration", 5, 2, 120));
-   gui.add(sensorMinimum.setup("Sensor Minimum", 3000, 0, 20000));
-   gui.add(sensorMaximum.setup("Sensor Maximum", 5000, 0, 20000));
+   gui.add(sensorMinimum.setup("Sensor Minimum", 3000, 0, 50000));
+   gui.add(sensorMaximum.setup("Sensor Maximum", 5000, 0, 50000));
    gui.loadFromFile("settings.xml");
    showGui = false;
 
@@ -65,6 +66,9 @@ void testApp::setup() {
    ofLog(OF_LOG_NOTICE, "\tMedia Type: " + printer_media_type); 
 
 
+    // font for countdown
+    font.loadFont("EurosBlaDTC", 200); // must be placed in /data folder
+    
    // start arduino serial
    arduino = new Arduino(serial_port, sensorMinimum, sensorMaximum);
    arduino->startThread(true, false);
@@ -82,6 +86,8 @@ void testApp::setup() {
    slideshow = new Slideshow(slides_dir, shader_file, transition_steps, slideDuration * 1000);
    slideshow->startThread(true, false);  
 
+    
+   // select mode
    if (hasSlideshow)
       mode = MODE_SLIDESHOW;
    else
@@ -97,7 +103,9 @@ void testApp::update(){
    switch(mode) {
 
    case MODE_KINECT:
-      kinect.update();
+      if (!freeze)
+          kinect.update();
+           
       if(kinect.isFrameNew()) {
          del.reset();
 
@@ -258,7 +266,7 @@ void testApp::draw(){
    switch(mode) {
 
    case MODE_KINECT:
-
+   
       //glEnable(GL_DEPTH_TEST);
 
       ofPushMatrix();
@@ -314,19 +322,75 @@ void testApp::draw(){
       gui.draw();
       ofPopStyle();
    }
-   ofSetColor(255, 255, 255);
+   
+   
+    if (startPhotoCountdown) {
+        
+        Helper::canSwitch = false;
+        
+        ofPushMatrix();
+        ofSetColor(255,255,255,64);
+        ofEnableAlphaBlending();
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
 
+        countdown.lock();
+        
+        if (countdown.getSeconds() == 0) { // freeze
+            
+            // TODO: print photos here
+            
+            //ofImage photo;
+            //photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+
+            float d = font.stringWidth(":-)");
+            font.drawString(":-)", (ofGetWidth() - d)/2, ofGetHeight()/2);
+            
+            freeze = true;
+            
+        }
+        
+        else if (countdown.getSeconds() <= -5 ) { // switch mode
+            
+            Helper::canSwitch = true;
+            
+            freeze = false;
+            
+            countdown.stopThread();
+            startPhotoCountdown = false;
+            
+            if (hasSlideshow) {
+                slideshow->reset();
+                mode = MODE_SLIDESHOW;
+            } else {
+                mode = MODE_KINECT;
+            }
+        
+        } else if (countdown.getSeconds() > 0) {                                       // show countdown
+            ostringstream sec; sec << countdown.getSeconds();
+            float dx = font.stringWidth(sec.str());
+            float dy = font.stringHeight(sec.str());
+            font.drawString(sec.str(), (ofGetWidth() - dx) / 2, ofGetHeight() - 80);
+        }
+        
+        countdown.unlock();
+        
+        ofDisableAlphaBlending();
+        ofPopMatrix();
+        
+    }
 
    // show loading wheel
     if (showWheel) {
       ofPushMatrix();
-      ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+      ofTranslate(ofGetWidth() / 2, ofGetHeight() - (2*progressWheel.getRadius()) - 10);
       ofEnableAlphaBlending();
       ofEnableBlendMode(OF_BLENDMODE_ALPHA); // _ADD for transperancy
       glEnableClientState(GL_COLOR_ARRAY);
       glEnableClientState(GL_VERTEX_ARRAY);
       for(int i=0;i<progressWheel.shapes.size();i++) {
+          progressWheel.lock();
          (progressWheel.shapes)[i].renderBHGradients();
+          progressWheel.unlock();
       }
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisableClientState(GL_COLOR_ARRAY);
@@ -334,6 +398,7 @@ void testApp::draw(){
       ofPopMatrix();
       
       // check if loaded
+        progressWheel.lock();
       if (progressWheel.shapes[0].BHGDegree == 360) {
          progressWheel.shapes[0].BHGDegree = 0;
          progressWheel.stopThread();
@@ -342,18 +407,24 @@ void testApp::draw(){
          
           switch(mode) {
                   
-              case MODE_KINECT:
-                  mode = MODE_SLIDESHOW;
-                  break;
               case MODE_SLIDESHOW:
                   mode = MODE_KINECT;
+                  break;
+                  
+              case MODE_KINECT:
+                  
+                  countdown.setSeconds(3);
+                  countdown.startThread(true, false);
+                  startPhotoCountdown = true;
+                  
                   break;
               default:
                   break;
           
           };
       }
-    } 
+        progressWheel.unlock();
+    }
 }
 
 
@@ -419,13 +490,12 @@ void testApp::keyPressed(int key) {
           #endif
           
           // print photo on mobile printer
-          /*
-         string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
+         string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type +  " " + fullpath);
          system(mobile_command.c_str());
 
-         string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " /Users/zaak/Documents/of_v0.7.4_osx_release/apps/myApps/emex2013/bin/data/" + file);
+         string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " " + fullpath);
          system(command.c_str());
-         */
+         
       }
       break;
 
@@ -443,6 +513,11 @@ void testApp::keyPressed(int key) {
 
    case ' ':
       showGui = !showGui;
+      if (showGui)
+          ofShowCursor();
+      else
+          ofHideCursor();
+               
       break;
 
    default:

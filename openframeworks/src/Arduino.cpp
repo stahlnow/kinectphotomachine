@@ -49,11 +49,11 @@ void Arduino::threadedFunction() {
          } else {
             int value = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24);
              
-             ofLog(OF_LOG_NOTICE, "Serial value: %i", value);
+             //ofLog(OF_LOG_VERBOSE, "Serial value: %i", value);
              
              if (value > sensorMinimum && value < sensorMaximum) {
                  if (!Helper::isButtonActive) {
-                     ofLog(OF_LOG_NOTICE, "Button is active");
+                     ofLog(OF_LOG_NOTICE, "Button is active, value is %i", value);
                      Helper::isButtonActive = true;
                  }
              }

@@ -13,6 +13,7 @@
 #include "Arduino.h"
 #include "ProgressWheel.h"
 #include "Slideshow.h"
+#include "Countdown.h"
 
 class testApp : public ofBaseApp {
 
@@ -52,6 +53,10 @@ private:
    ofxDelaunay del;
    ofImage blob;
 
+   bool startPhotoCountdown = false;
+   ofTrueTypeFont font;
+   Countdown countdown;
+    bool freeze = false;
 
    // Gui
    bool showGui;

@@ -61,11 +61,11 @@ void imgLoader::loadNextTexture() {
 		//Scaling the image 
 		float aspect_ratio = (float)nextTexture->width / nextTexture->height;
 		//Check if i need to scale
-		if (nextTexture->height != 768 || nextTexture->width != 1024){
-			int new_width = 1024;
-			int new_height = 768;
-			if (nextTexture->height > 768) new_width = (int)(aspect_ratio * new_height);
-			if (nextTexture->width > 1024) new_height = (int)(new_width / aspect_ratio);
+		if (nextTexture->height != 1920 || nextTexture->width != 1080){
+			int new_width = 1080;
+			int new_height = 1920;
+			if (nextTexture->height > 1920) new_width = (int)(aspect_ratio * new_height);
+			if (nextTexture->width > 1080) new_height = (int)(new_width / aspect_ratio);
 			nextTexture->resize(new_width,new_height);
 			ofLog(OF_LOG_VERBOSE,"Scaled image: %f, %d, %d",aspect_ratio, new_width, new_height);
 		};		

@@ -3,7 +3,7 @@
 Slideshow::Slideshow(string image_dir, string shader_file, int transition_steps, int slide_duration)
    : image_dir (image_dir), shader_file (shader_file), transition_steps(transition_steps)
 {
-   iStartTime = ofGetElapsedTimeMillis();
+   
    iSlideDurationMilliseconds = slide_duration;
 
    loader.start(image_dir);
@@ -15,8 +15,8 @@ Slideshow::Slideshow(string image_dir, string shader_file, int transition_steps,
    transitionEnded = false;
    progress = 0;
    step = (float)transition_steps / 100;
-   temp_cur_texture.allocate(1024, 768, GL_RGB); // CHANGE FOR THE SIZE OF THE IMAGES ...
-   temp_next_texture.allocate(1024, 768, GL_RGB);
+   temp_cur_texture.allocate(1080, 1920, GL_RGB); // CHANGE FOR THE SIZE OF THE IMAGES ...
+   temp_next_texture.allocate(1080, 1920, GL_RGB);
 
 
 }
@@ -25,6 +25,8 @@ Slideshow::Slideshow(string image_dir, string shader_file, int transition_steps,
 
 void Slideshow::threadedFunction() {
    
+   iStartTime = ofGetElapsedTimeMillis();
+    
    while (isThreadRunning()) {
       
       float timer = ofGetElapsedTimeMillis() - iStartTime;
@@ -35,9 +37,16 @@ void Slideshow::threadedFunction() {
          iStartTime = ofGetElapsedTimeMillis();
       }
    }
-
 }
 
+void Slideshow::reset() {
+    lock();
+    progress = 0;
+    loadNextImg = true;
+    transitionStarted = false;
+    iStartTime = ofGetElapsedTimeMillis();
+    unlock();
+}
 
 void Slideshow::update() {
    
@@ -105,7 +114,7 @@ void Slideshow::fadeInfadeOut(ofImage* currImg, ofImage* nextImg) {
 
 int Slideshow::getCenteredCoordinate(ofImage* image) {
    int x = 0;
-   if (image->width != 1024) x = 512 - (image->width / 2);
+   if (image->width != 1080) x = 540 - (image->width / 2);
    return x;
 }
 

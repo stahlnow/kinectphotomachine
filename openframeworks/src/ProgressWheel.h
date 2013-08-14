@@ -10,11 +10,13 @@ class ProgressWheel : public ofThread  {
 public:
 
    ProgressWheel() {
-      
+       
+       iRadius = 80;
+       
       ofVec3f centre = ofVec3f (0,0,0);
       // centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness, BHGDiameter, color, BHGDegree
-      addGradientShape(centre, 0, 12, 2, 1, 100, Helper::darkOrange, 0); // progress
-      addGradientShape(centre, 1, 12, 2, 2, 120, Helper::darkOrange, 360); // outline
+      addGradientShape(centre, 0, 12, 2, 1, iRadius - 20, Helper::darkOrange, 0); // progress
+      addGradientShape(centre, 1, 12, 2, 2, iRadius, Helper::darkOrange, 360); // outline
 
       iButtonEndTime = 50; // 50 milliseconds for one loading step (BHGNumSides)
 
@@ -32,7 +34,9 @@ public:
          }
       }
    }
-
+    
+   int getRadius() { return this->iRadius; }
+    
    void addGradientShape(ofVec3f centre, int BHGShapeType, int BHGNumSides, float BHGBlur, float BHGThickness, float BHGDiameter, ofColor c_, int BHGDegree) {
       shapes.push_back(ofxGradientShape(shapeCount, centre, BHGShapeType, BHGNumSides, BHGBlur, BHGThickness,BHGDiameter, c_,BHGDegree));
       shapeCount++;
@@ -43,6 +47,7 @@ public:
    bool bButtonTimerReached;
    int iButtonStartTime;
    int iButtonEndTime;
+   int iRadius;
 
 
    

@@ -8,25 +8,25 @@
 <Slideshow>1</Slideshow>
 <Slide_Duration>6</Slide_Duration>
 <settings>
-    <log_level>notice</log_level>
+    <log_level>verbose</log_level>
     <slides_dir>slides</slides_dir>
     <shader_file>SlideIn</shader_file>
     <transition_step>2</transition_step>
     <photo_dir>photos</photo_dir>
     <serial_port>auto</serial_port>
-    <mobile_printer_name>HP_Officejet_100_Mobile_L411</mobile_printer_name>
+    <mobile_printer_name>HP_Officejet_100_Mobile_L411_3</mobile_printer_name>
     <mobile_printer_format>4x6.FullBleed</mobile_printer_format>
     <mobile_printer_quality>highest</mobile_printer_quality>
-    <mobile_printer_media_type>hp-premium-plus-photo-paper</mobile_printer_media_type>
+    <mobile_printer_media_type>hp-advanced-photo-paper-glossy</mobile_printer_media_type>
     <printer_name>Officejet_Pro_8100</printer_name>
     <printer_format>4x6.Fullbleed</printer_format>
     <printer_quality>High</printer_quality>
     <printer_media_type>com.hp.advanced-photo</printer_media_type>
 </settings>
-<Camera_Z>1290</Camera_Z>
+<Camera_Z>2115</Camera_Z>
 <Slide_Duration>8</Slide_Duration>
 <Red>255</Red>
 <Green>80</Green>
 <Blue>0</Blue>
-<Sensor_Minimum>1000</Sensor_Minimum>
-<Sensor_Maximum>11400</Sensor_Maximum>
+<Sensor_Minimum>1500</Sensor_Minimum>
+<Sensor_Maximum>50000</Sensor_Maximum>
