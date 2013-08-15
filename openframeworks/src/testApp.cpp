@@ -20,8 +20,8 @@ void testApp::setup() {
    gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
    gui.add(hasSlideshow.setup("Slideshow", false));
    gui.add(slideDuration.setup("Slide Duration", 5, 2, 120));
-   gui.add(sensorMinimum.setup("Sensor Minimum", 3000, 0, 50000));
-   gui.add(sensorMaximum.setup("Sensor Maximum", 5000, 0, 50000));
+   gui.add(sensorMinimum.setup("Sensor Minimum", 300, 0, 10000));
+   gui.add(sensorMaximum.setup("Sensor Maximum", 500, 0, 10000));
    gui.loadFromFile("settings.xml");
    showGui = false;
 
@@ -320,6 +320,12 @@ void testApp::draw(){
       ofPushStyle();
       ofSetColor(255,255,255,255);
       gui.draw();
+       /*
+       arduino->lock();
+       ostringstream v; v << arduino->getValue();
+       font.drawString(v.str(), ofGetWidth() / 2, ofGetHeight() - 100);
+       arduino->unlock();
+       */
       ofPopStyle();
    }
    

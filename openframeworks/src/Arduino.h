@@ -21,8 +21,12 @@ public:
     inline int getSensorMaximum() { return sensorMaximum; }
     inline void setSensorMaximum(int sensorMax) { sensorMaximum = sensorMax; }
 
+    inline int getValue() { return iValue; }
+    
 private:
    string serialPort;
+    int iValue;
+    int iErrorTresh;
     int sensorMinimum;
     int sensorMaximum;
    static const int COMMAND_LENGTH = 4;

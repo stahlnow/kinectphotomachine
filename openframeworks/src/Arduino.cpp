@@ -3,6 +3,9 @@
 Arduino::Arduino(string serialPort, int sensorMinimum, int sensorMaximum)
 : serialPort(serialPort), sensorMinimum(sensorMinimum), sensorMaximum(sensorMaximum) {
 
+    iValue = 0;
+    iErrorTresh = 4;
+    
    vector <ofSerialDeviceInfo> dl = serial.getDeviceList();
 
    ofLog(OF_LOG_NOTICE, "### Listing serial ports:");
@@ -31,7 +34,8 @@ Arduino::Arduino(string serialPort, int sensorMinimum, int sensorMaximum)
 void Arduino::threadedFunction() {
 
    unsigned char buffer[COMMAND_LENGTH];
-
+   unsigned int errorCounter = 0;
+    
    while (isThreadRunning()) {
 
       if (serial.available() >= COMMAND_LENGTH) {
@@ -47,17 +51,20 @@ void Arduino::threadedFunction() {
             ofLog(OF_LOG_NOTICE, "Serial: Nothing was read, continue..");
 
          } else {
-            int value = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24);
+            iValue = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24);
              
-             //ofLog(OF_LOG_VERBOSE, "Serial value: %i", value);
+             ofLog(OF_LOG_VERBOSE, "Serial value: %i", iValue);
              
-             if (value > sensorMinimum && value < sensorMaximum) {
-                 if (!Helper::isButtonActive) {
-                     ofLog(OF_LOG_NOTICE, "Button is active, value is %i", value);
+             if (iValue > sensorMinimum && iValue < sensorMaximum) {
+                 errorCounter++;
+                 if (errorCounter > iErrorTresh && !Helper::isButtonActive) {
+                     ofLog(OF_LOG_NOTICE, "Button is active, value is %i", iValue);
                      Helper::isButtonActive = true;
+                     errorCounter = 0;
                  }
              }
              else {
+                 errorCounter = 0;
                  if (Helper::isButtonActive) {
                      Helper::isButtonActive = false;
                      Helper::canSwitch = true;
