@@ -68,6 +68,8 @@ void testApp::setup() {
 
     // font for countdown
     font.loadFont("EurosBlaDTC", 200); // must be placed in /data folder
+    // font for text
+    fontText.loadFont("EurosBlaDTC", 30);
     
    // start arduino serial
    arduino = new Arduino(serial_port, sensorMinimum, sensorMaximum);
@@ -302,6 +304,12 @@ void testApp::draw(){
       ofPopMatrix();
 
       postFx.end();
+           
+      if (!freeze) {
+          fontText.drawString("Touch the button\nto take a picture",
+                      (ofGetWidth() - fontText.stringWidth("Touch the button\nto take a picture"))/2,
+                      ofGetHeight() - 150);
+      }
 
       break;
 
@@ -335,7 +343,7 @@ void testApp::draw(){
         Helper::canSwitch = false;
         
         ofPushMatrix();
-        ofSetColor(255,255,255,64);
+        ofSetColor(255,255,255,255);
         ofEnableAlphaBlending();
         ofEnableBlendMode(OF_BLENDMODE_ADD);
 
@@ -343,16 +351,20 @@ void testApp::draw(){
         
         if (countdown.getSeconds() == 0) { // freeze
             
-            // TODO: print photos here
+            printPhoto();
             
-            //ofImage photo;
-            //photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
-
-            float d = font.stringWidth(":-)");
-            font.drawString(":-)", (ofGetWidth() - d)/2, ofGetHeight()/2);
+            //float d = font.stringWidth(":-)");
+            //font.drawString(":-)", (ofGetWidth() - d)/2, ofGetHeight()/2);
             
             freeze = true;
             
+        }
+        
+        else if (countdown.getSeconds() < 0 && countdown.getSeconds() > -5) {
+            fontText.drawString("Printing in process",
+                                (ofGetWidth() - fontText.stringWidth("Printing in process"))/2,
+                                ofGetHeight() - 150);
+
         }
         
         else if (countdown.getSeconds() <= -5 ) { // switch mode
@@ -375,7 +387,7 @@ void testApp::draw(){
             ostringstream sec; sec << countdown.getSeconds();
             float dx = font.stringWidth(sec.str());
             float dy = font.stringHeight(sec.str());
-            font.drawString(sec.str(), (ofGetWidth() - dx) / 2, ofGetHeight() - 80);
+            font.drawString(sec.str(), (ofGetWidth() - dx) / 2, ofGetHeight() - 300);
         }
         
         countdown.unlock();
@@ -433,7 +445,52 @@ void testApp::draw(){
     }
 }
 
-
+void testApp::printPhoto() {
+    // create filename
+    time_t rawtime;
+    struct tm * timeinfo;
+    char file [80];
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    strftime (file, 80, "photo-%F_%H-%M-%S.png", timeinfo);
+    
+    string fullpath = ofToDataPath(photo_dir + "/" + file);
+    
+    // grab screen
+    ofImage photo;
+    //cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
+    photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+    
+    // adjust aspect ratio to 15:10 (photo paper), crop(x,y,width,height), where x,y is position.
+    if (ofGetWidth() == 1920)
+        photo.crop(150, 0, 1620, 1080);
+    
+    else if (ofGetWidth() == 1600)
+        photo.crop(125, 0, 1350, 900);
+    
+    // portrait modes
+    else if (ofGetWidth() == 1080)
+        photo.crop(0, 150, 1080, 1620);
+    
+    else if (ofGetWidth() == 900)
+        photo.crop(0, 125, 900, 1350);
+    
+    // save image
+    photo.saveImage(fullpath);
+    
+#ifdef __APPLE__
+    // convert to cmyk
+    string conversion_command("sips -m " + ofToDataPath("CMYK.icc") + " " + fullpath);
+    system(conversion_command.c_str());
+#endif
+    
+    // print photo on mobile printer
+    string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type +  " " + fullpath);
+    system(mobile_command.c_str());
+    
+    string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " " + fullpath);
+    system(command.c_str());
+}
 
 
 //--------------------------------------------------------------

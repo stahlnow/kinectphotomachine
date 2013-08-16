@@ -43,6 +43,9 @@ public:
 
 
 private:
+    
+   void printPhoto();
+    
    // Kinect
    ofxKinect kinect;
    ofEasyCam cam;
@@ -53,10 +56,12 @@ private:
    ofxDelaunay del;
    ofImage blob;
 
-   bool startPhotoCountdown = false;
    ofTrueTypeFont font;
+   ofTrueTypeFont fontText;
+    
+   bool startPhotoCountdown = false;
    Countdown countdown;
-    bool freeze = false;
+   bool freeze = false;
 
    // Gui
    bool showGui;

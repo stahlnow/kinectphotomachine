@@ -14,7 +14,7 @@
     <transition_step>2</transition_step>
     <photo_dir>photos</photo_dir>
     <serial_port>auto</serial_port>
-    <mobile_printer_name>HP_Officejet_100_Mobile_L411_3</mobile_printer_name>
+    <mobile_printer_name>HP_Officejet_100_Mobile_L411_2</mobile_printer_name>
     <mobile_printer_format>4x6.FullBleed</mobile_printer_format>
     <mobile_printer_quality>highest</mobile_printer_quality>
     <mobile_printer_media_type>hp-advanced-photo-paper-glossy</mobile_printer_media_type>
@@ -28,5 +28,5 @@
 <Red>255</Red>
 <Green>80</Green>
 <Blue>0</Blue>
-<Sensor_Minimum>600</Sensor_Minimum>
-<Sensor_Maximum>5000</Sensor_Maximum>
+<Sensor_Minimum>2000</Sensor_Minimum>
+<Sensor_Maximum>10000</Sensor_Maximum>
