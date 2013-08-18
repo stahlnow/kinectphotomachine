@@ -15,7 +15,7 @@
 <Red>255</Red>
 <Green>80</Green>
 <Blue>0</Blue>
-<Sensor_Minimum>6500</Sensor_Minimum>
+<Sensor_Minimum>100</Sensor_Minimum>
 <Sensor_Maximum>25000</Sensor_Maximum>
 <settings>
     <log_level>verbose</log_level>

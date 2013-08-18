@@ -378,7 +378,7 @@ void testApp::draw(){
             freeze = true;
             
             // print photo (must be after freeze=true)
-            //printPhoto();
+            printPhoto();
         }
         
         else if (countdown.getSeconds() < 0 && countdown.getSeconds() > -40) {
