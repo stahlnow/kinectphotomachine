@@ -13,16 +13,20 @@ void testApp::setup() {
    gui.add(useRealColors.setup("Real Colors", true));
    gui.add(drawWireMesh.setup("Wire Mesh", false));
    gui.add(colorAlpha.setup("Color Alpha", 255, 0, 255));
-   gui.add(kinectZTranslation.setup("Camera Z", 1300, 0, 3000));
+    gui.add(kinectRadius.setup("Camera Radius", 100, 0, 1000));
+   gui.add(kinectTilt.setup("Camera Orbit Y", 0, -45, 45));
+   gui.add(kinectYTranslation.setup("Camera Y", 200, -1000, 1000));
+   gui.add(kinectZTranslation.setup("Camera Z", 1920, -3000, 3000));
    gui.add(kinectRed.setup("Red", 255, 0, 255));
    gui.add(kinectGreen.setup("Green", 255, 0, 255));
    gui.add(kinectBlue.setup("Blue", 255, 0, 255));
    gui.add(screenRotation.setup("Screen Rotation", 0, 0, 270));
    gui.add(hasSlideshow.setup("Slideshow", false));
    gui.add(slideDuration.setup("Slide Duration", 5, 2, 120));
-   gui.add(sensorMinimum.setup("Sensor Minimum", 300, 0, 10000));
-   gui.add(sensorMaximum.setup("Sensor Maximum", 500, 0, 10000));
-   gui.loadFromFile("settings.xml");
+   gui.add(slideShowSwitchTimeout.setup("Kinect Timeout", 2, 1, 20));
+   gui.add(sensorMinimum.setup("Sensor Minimum", 300, 0, 100000));
+   gui.add(sensorMaximum.setup("Sensor Maximum", 15000, 0, 100000));
+   gui.loadFromFile("settings.xml");    
    showGui = false;
 
    // load settings
@@ -90,11 +94,19 @@ void testApp::setup() {
 
     
    // select mode
-   if (hasSlideshow)
-      mode = MODE_SLIDESHOW;
-   else
-      mode = MODE_KINECT;
-
+    if (hasSlideshow) {
+       switchMode(MODE_SLIDESHOW);
+    }
+    else {
+       switchMode(MODE_KINECT);
+    }
+    
+    
+    cam.begin();
+       
+    
+    cam.end();
+    
 }
 
 
@@ -102,9 +114,17 @@ void testApp::setup() {
 void testApp::update(){
 
   
-   switch(mode) {
+   float timer = ofGetElapsedTimeMillis() - slideShowSwitchStartTime;
+    
+   switch(_mode) {
 
    case MODE_KINECT:
+      
+      if (timer >= slideShowSwitchTimeout * 1000 * 60) {
+          switchMode(MODE_SLIDESHOW);
+          slideShowSwitchStartTime = ofGetElapsedTimeMillis();
+      }
+           
       if (!freeze)
           kinect.update();
            
@@ -265,19 +285,29 @@ void testApp::draw(){
    // black background
    ofBackground(0, 0, 0);
    
-   switch(mode) {
+   switch(_mode) {
 
    case MODE_KINECT:
    
       //glEnable(GL_DEPTH_TEST);
 
+      
       ofPushMatrix();
 
       cam.begin();
-      cam.setScale(1,-1,1);
-
+      cam.resetTransform();
+      cam.setScale(-1,-1,1);
+           
+      cam.orbit(0, -kinectTilt, kinectRadius);
+     
+      cam.move(0, kinectYTranslation, kinectZTranslation);
+      
       ofSetColor(255, 255, 255);
-      ofTranslate(0, -80, kinectZTranslation);
+    
+      cam.setNearClip(1) ;
+      cam.setFarClip(10000);
+           
+      
       ofFill();
 
       postFx.begin();
@@ -304,12 +334,6 @@ void testApp::draw(){
       ofPopMatrix();
 
       postFx.end();
-           
-      if (!freeze) {
-          fontText.drawString("Touch the button\nto take a picture",
-                      (ofGetWidth() - fontText.stringWidth("Touch the button\nto take a picture"))/2,
-                      ofGetHeight() - 150);
-      }
 
       break;
 
@@ -351,23 +375,20 @@ void testApp::draw(){
         
         if (countdown.getSeconds() == 0) { // freeze
             
-            printPhoto();
-            
-            //float d = font.stringWidth(":-)");
-            //font.drawString(":-)", (ofGetWidth() - d)/2, ofGetHeight()/2);
-            
             freeze = true;
             
+            // print photo (must be after freeze=true)
+            //printPhoto();
         }
         
-        else if (countdown.getSeconds() < 0 && countdown.getSeconds() > -5) {
-            fontText.drawString("Printing in process",
-                                (ofGetWidth() - fontText.stringWidth("Printing in process"))/2,
+        else if (countdown.getSeconds() < 0 && countdown.getSeconds() > -40) {
+            fontText.drawString("Printing in process...",
+                                (ofGetWidth() - fontText.stringWidth("Printing in process..."))/2,
                                 ofGetHeight() - 150);
 
         }
         
-        else if (countdown.getSeconds() <= -5 ) { // switch mode
+        else if (countdown.getSeconds() <= -40 ) { // switch mode
             
             Helper::canSwitch = true;
             
@@ -377,10 +398,9 @@ void testApp::draw(){
             startPhotoCountdown = false;
             
             if (hasSlideshow) {
-                slideshow->reset();
-                mode = MODE_SLIDESHOW;
+                switchMode(MODE_SLIDESHOW);
             } else {
-                mode = MODE_KINECT;
+                switchMode(MODE_KINECT);
             }
         
         } else if (countdown.getSeconds() > 0) {                                       // show countdown
@@ -423,15 +443,15 @@ void testApp::draw(){
          Helper::canSwitch = false;
          showWheel = false;
          
-          switch(mode) {
+          switch(_mode) {
                   
               case MODE_SLIDESHOW:
-                  mode = MODE_KINECT;
+                  switchMode(MODE_KINECT);
                   break;
                   
               case MODE_KINECT:
-                  
-                  countdown.setSeconds(3);
+                  slideShowSwitchStartTime = ofGetElapsedTimeMillis();
+                  countdown.setSeconds(5);
                   countdown.startThread(true, false);
                   startPhotoCountdown = true;
                   
@@ -442,6 +462,27 @@ void testApp::draw(){
           };
       }
         progressWheel.unlock();
+    }
+    
+    
+    if (_mode == MODE_KINECT && !freeze) {
+        fontText.drawString("Touch the button\nto take a picture",
+                            (ofGetWidth() - fontText.stringWidth("Touch the button\nto take a picture"))/2,
+                            ofGetHeight() - 150);
+    }
+    
+    
+}
+
+void testApp::switchMode(int mode) {
+    if (mode == MODE_KINECT) {
+        slideShowSwitchStartTime = ofGetElapsedTimeMillis();
+        _mode = MODE_KINECT;
+    } else if (mode == MODE_SLIDESHOW) {
+        if (hasSlideshow) {
+            slideshow->reset();
+            _mode = MODE_SLIDESHOW;
+        }
     }
 }
 
@@ -499,66 +540,17 @@ void testApp::keyPressed(int key) {
 
    switch(key) {
    case 'm':
-      if (mode == MODE_KINECT) {
-         mode = MODE_SLIDESHOW;
+      if (_mode == MODE_KINECT) {
+         switchMode(MODE_SLIDESHOW);
       } else {
-         mode = MODE_KINECT;
+         switchMode(MODE_KINECT);
       }
       break;
 
-   case 'l':
-      break;
-
+  
    case 'p':
       {
-         
-         //isPrinting = true;
-          
-          // create filename
-          time_t rawtime;
-          struct tm * timeinfo;
-          char file [80]; 
-          time (&rawtime);
-          timeinfo = localtime (&rawtime);
-          strftime (file, 80, "photo-%F_%H-%M-%S.png", timeinfo);
-                    
-          string fullpath = ofToDataPath(photo_dir + "/" + file);
-        
-          // grab screen
-         ofImage photo;
-         //cout << ofGetWidth() << "x"<< ofGetHeight() << endl;
-         photo.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
-
-         // adjust aspect ratio to 15:10 (photo paper), crop(x,y,width,height), where x,y is position.
-         if (ofGetWidth() == 1920)
-            photo.crop(150, 0, 1620, 1080);
-         
-         else if (ofGetWidth() == 1600)
-            photo.crop(125, 0, 1350, 900);
-
-         // portrait modes
-         else if (ofGetWidth() == 1080)
-            photo.crop(0, 150, 1080, 1620);
-
-         else if (ofGetWidth() == 900)
-            photo.crop(0, 125, 900, 1350);
-         
-          // save image
-         photo.saveImage(fullpath);	
-
-          #ifdef __APPLE__
-          // convert to cmyk
-          string conversion_command("sips -m " + ofToDataPath("CMYK.icc") + " " + fullpath);
-          system(conversion_command.c_str());
-          #endif
-          
-          // print photo on mobile printer
-         string mobile_command("lp -d " + mobile_printer_name + " -o media=" + mobile_printer_format + "," + mobile_printer_media_type +  " " + fullpath);
-         system(mobile_command.c_str());
-
-         string command("lp -d " + printer_name + " -o media=" + printer_format + "," + printer_media_type + " " + fullpath);
-         system(command.c_str());
-         
+          printPhoto();
       }
       break;
 

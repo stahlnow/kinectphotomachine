@@ -21,6 +21,8 @@ public:
    void setup();
    void update();
    void draw();
+    
+   void switchMode(int mode);
 
    void keyPressed(int key);
    void keyReleased(int key);
@@ -39,7 +41,7 @@ public:
       MODE_SLIDESHOW
    };
 
-   Mode mode;
+   Mode _mode;
 
 
 private:
@@ -48,7 +50,8 @@ private:
     
    // Kinect
    ofxKinect kinect;
-   ofEasyCam cam;
+   //ofEasyCam cam;
+   ofCamera cam;
    ofxPostProcessing postFx;
    int iKinectServoAngle;
    ofMesh convertedMesh;
@@ -58,6 +61,9 @@ private:
 
    ofTrueTypeFont font;
    ofTrueTypeFont fontText;
+    
+   int slideShowSwitchStartTime = 0;
+   
     
    bool startPhotoCountdown = false;
    Countdown countdown;
@@ -70,9 +76,13 @@ private:
    ofxSlider<float> noiseAmount;
    ofxToggle useRealColors;
    ofxToggle drawWireMesh;
-   ofxToggle hasSlideshow; 
+   ofxToggle hasSlideshow;
+   ofxSlider<int> slideShowSwitchTimeout;
    ofxSlider<int> pointSkip;
    ofxSlider<int> screenRotation;
+   ofxSlider<int> kinectRadius;
+   ofxSlider<int> kinectTilt;
+   ofxSlider<int> kinectYTranslation;
    ofxSlider<int> kinectZTranslation;
    ofxSlider<int> slideDuration;
    ofxSlider<int> kinectRed;
